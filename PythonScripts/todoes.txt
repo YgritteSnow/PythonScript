@@ -1,0 +1,12 @@
+拾取和碰撞，开始做树形图
+
+生成纹理
+指示光源的东西
+用点精灵做特效
+开始做shader了
+
+把material和tex的继承抽出来
+
+pythonScript
+自动把所有.h里include的东西都转到cpp里边
+include的所有的库函数放在非库函数前边，并且换行
