@@ -194,4 +194,5 @@ def reconstitution():
 
 	print 'Fix End'
 
-reconstitution()
+if __name__ == '__main__':
+	reconstitution()

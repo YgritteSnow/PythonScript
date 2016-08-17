@@ -73,11 +73,11 @@ def reconstitution( proj_file_name ):
 		filter_lines = filter_file.readlines( 1000 )
 
 		for idx,line in enumerate(filter_lines):
-                        if line.find("<ClCompile Include=") == -1: # 是filter的映射行
-                                continue
+			if line.find("<ClCompile Include=") == -1: # 是filter的映射行
+			        continue
 
-                        origin_path = clampStr(line, '"', '"')
-                        filter_path = clampStr(filter_lines[idx+1], 'Source Files', '<')
+			origin_path = clampStr(line, '"', '"')
+			filter_path = clampStr(filter_lines[idx+1], 'Source Files', '<')
 		
 	except IOError:
 		print 'IO error'
@@ -87,4 +87,5 @@ def reconstitution( proj_file_name ):
 
 	print 'Fix End'
 
-reconstitution( r"C:\Users\j\Documents\Git Projects\MyDXExercises\MyDxExercises\MyDxExercises.vcxproj" )
+if __name__ == '__main__':
+	reconstitution( r"C:\Users\j\Documents\Git Projects\MyDXExercises\MyDxExercises\MyDxExercises.vcxproj" )
