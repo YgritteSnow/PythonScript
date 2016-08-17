@@ -14,6 +14,11 @@ from lib_math import Vector2, LineForGrid, GetLineStepX, GetLineStepY
 ### 生成：读取贴图
 ###################################################################
 
+def load_image( image_surface, image_width, image_height, src_filename ):
+	src_surface = pygame.image.load(src_filename)
+	#src_surface.convert
+	image_surface.blit( src_surface, (0, 0) )
+
 ###################################################################
 ### 生成：随机的点
 ###################################################################
@@ -139,8 +144,9 @@ def draw_line( image_surface, image_width, image_height, line_start, line_end, c
 ###################################################################
 
 tmp = ImageGeneratingFrame( 300, 300, 300, 300 )
+#tmp.Process(load_image, "sample.bmp")
 for i in range(0, 300, 20):
 	tmp.Process(draw_line, Vector2(0, 0), Vector2(i, 299), (255, 255, 255))
 #tmp.Process(random_pixel)
 #tmp.Process(blur_vec, 20, Vector2(2,1) )
-tmp.SaveImageToFile()
+tmp.SaveImageToFile("img_surface.bmp")

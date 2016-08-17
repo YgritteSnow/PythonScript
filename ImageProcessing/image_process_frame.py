@@ -28,7 +28,7 @@ class ImageGeneratingFrame( object ):
 		
 		return
 
-	def SaveImageToFile( self ):
-		pygame.image.save(self.m_img_surface, "img_surface.jpg")
+	def SaveImageToFile( self, filename ):
+		pygame.image.save(self.m_img_surface, filename)
 
 		return
