@@ -4,11 +4,15 @@
 #     解析字符串的通用的函数
 # ---------------------------
 
+# 空字符
+g_blankChar = ('\t', ' ', )
+
+# 非数字和字母的字符
+g_split_char = frozenset(('!', ' ', '#', '"', "'", '&', ')', '(', '+', '*', '-', ',', '/', '.', ';', ':', '=', '<', '>', '[', ']', '\\', '{', '}', '|', '~', '?', ))
+
 ##################################################################
 ### 分割字符串
 ##################################################################
-
-g_split_char = frozenset(('!', ' ', '#', '"', "'", '&', ')', '(', '+', '*', '-', ',', '/', '.', ';', ':', '=', '<', '>', '[', ']', '\\', '{', '}', '|', '~', '?', ))
 
 def splitStr(string, char_set = None):
 	res = string.split()
@@ -116,3 +120,17 @@ def matchCaseWithWords( origin_str, left_cases, right_cases ):
 			res.append( (left_idx, right_idx) )
 			left_idx += 1
 			right_idx += 1
+
+##################################################################
+### 去掉行前行后的字符串
+##################################################################
+
+def splitPreFix( line ):
+	idx = 0
+	while idx != len(line) and line[idx] in g_blankChar:idx += 1
+	return line[:idx], line[idx:]
+
+def splitPostFix( line ):
+	idx = len(line) - 1
+	while idx != -1 and line[idx] in g_blankChar:idx -= 1
+	return line[:idx+1], line[idx+1:]
