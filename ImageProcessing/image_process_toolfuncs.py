@@ -141,6 +141,7 @@ def draw_line( image_surface, image_width, image_height, line_start, line_end, c
 		image_surface.set_at( (point.x_int, point.y_int), color )
 
 ###################################################################
+### 处理：试试随便一个处理函数迭代迭代有什么效果
 ###################################################################
 
 def magicFunc( vec, max_x, max_y ):
