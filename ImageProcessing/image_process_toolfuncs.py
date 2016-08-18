@@ -6,6 +6,7 @@
 
 import pygame
 import random
+import math
 
 from image_process_frame import ImageGeneratingFrame
 from lib_math import Vector2, LineForGrid, GetLineStepX, GetLineStepY
@@ -140,13 +141,32 @@ def draw_line( image_surface, image_width, image_height, line_start, line_end, c
 		image_surface.set_at( (point.x_int, point.y_int), color )
 
 ###################################################################
+###################################################################
+
+def magicFunc( vec, max_x, max_y ):
+	old_x, old_y = vec.x / max_x, vec.y / max_y
+	vec.x = min( 1, (old_x + old_y + random.random()/111 )/2 ) * max_x
+	vec.y = min( 1, math.sqrt(old_x * old_y) + random.random()/111 ) * max_y
+
+def magicProcess( image_surface, image_width, image_height ):
+	origin_point = Vector2( 1, image_height-1 )
+	count = 10
+	while count > 0:
+		count -= 1
+		old_color = image_surface.get_at( (origin_point.x_int, origin_point.y_int) )
+		image_surface.set_at( (origin_point.x_int, origin_point.y_int), old_color + pygame.Color(100, 0, 0, 0) )
+		magicFunc( origin_point, image_width-1, image_height-1 )
+		print origin_point
+
+###################################################################
 ### 主流程
 ###################################################################
 
 tmp = ImageGeneratingFrame( 300, 300, 300, 300 )
 #tmp.Process(load_image, "sample.bmp")
-for i in range(0, 300, 20):
-	tmp.Process(draw_line, Vector2(0, 0), Vector2(i, 299), (255, 255, 255))
+#for i in range(0, 300, 20):
+#	tmp.Process(draw_line, Vector2(0, 0), Vector2(i, 299), (255, 255, 255))
 #tmp.Process(random_pixel)
 #tmp.Process(blur_vec, 20, Vector2(2,1) )
+tmp.Process(magicProcess)
 tmp.SaveImageToFile("img_surface.bmp")
