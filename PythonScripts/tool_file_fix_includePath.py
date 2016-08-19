@@ -11,7 +11,7 @@
 from lib_file_node import *
 from lib_string_common import splitStr, ifCareFile, replaceStrInQuot, findHFilename
 
-root_filepath = "DxDemo_1"
+root_filepath = "MyDxExercises"
 
 readline_max = 1000
 
@@ -63,7 +63,6 @@ def filepath_2_includeStr( filepath ):
 
 def filepath_2_filename( includeStr ):
 	pathwords = splitStr( includeStr, ('\"', '\\', '/', ) )
-	print 'filepath_2_filename' , pathwords
 	i = len(pathwords) - 1
 	while i >= 0:
 		if len(pathwords[i]):
@@ -119,16 +118,14 @@ def fixIncludes( fullpath, t_file_map ):
 def fixVcxprojs( fullpath, t_file_map ):
 	if not ifCareFile( fullpath, ('.vcxproj', '.vcxproj.filters', ) ):return
 
-	print 'fix vcxprojs start', fullpath
+	print 'fix vcxprojs start', fullpath, t_file_map
 
 	filestr = open( fullpath, 'r+' )
 
 	f_lines = []
 	try:
-		print 'filename ', fullpath
 		lines = filestr.readlines( readline_max )
 		while len(lines):
-			print 'line count ', len(lines)
 			for line in lines:
 				if line.find("Include=") != -1:
 					h_file_name = findHFilename( line )
@@ -170,7 +167,7 @@ def reconstitution():
 	print 'Fix Start'
 
 	filelist = (
-		r"F:\MyProjects\SimpleBMP_hzy\SimpleBMP\SimpleBMP", 
+		r"F:\MyProjects\MyDXExercises\MyDxExercises", 
 	)
 
 	t_file_map = {}
@@ -181,6 +178,7 @@ def reconstitution():
 			fullpath = file_node.fullDir
 			if not ifCareFile( fullpath ):continue
 
+			print 'reconstitution', fullpath
 			if is_nonBuildin_headerfile( fullpath ) or is_nonBuildin_cppfile( fullpath ):
 				t_file_map[file_node.name] = file_node.fullDir
 
