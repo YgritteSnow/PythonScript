@@ -49,7 +49,7 @@ def fixHeaderPrefix():
 	print 'Fix Start'
 
 	filelist = (
-		r"C:\Users\j\Documents\Git Projects\MyDXExercises\MyDxExercises",
+		r"F:\MyProjects\MyDXExercises\MyDxExercises",
 	)
 	for filetree_name in filelist:
 		file_tree = FileTree(filetree_name)
