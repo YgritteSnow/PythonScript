@@ -73,7 +73,7 @@ def analysisWord(file_tree):
 		i -= 1
 
 		fname = fnode.fullDir
-		if not ifCareFile(fname):continue
+		if not ifCareFile(fname, ('js',) ):continue
 		f = open(fname, 'r')
 
 		try:
@@ -152,10 +152,10 @@ def doFileMerge_2():
 	print 'Query Start'
 
 	filelist = (
-		r"E:\X5_2\depot\platform\platform_shared\process\signalslot.cpp", 
-		r"E:\X5_2\depot\products\Project_X52\ui_components\ui_main", 
+		r"D:\WorkProjects\xyzjmj\server\GameCode.js", 
+		r"D:\WorkProjects\xyzjmj\server", 
 	)
-	output_filename = r"F:\t.txt"
+	output_filename = r"D:\t.txt"
 
 	word_range = []
 	file_tree = FileTree(filelist[0])
@@ -354,4 +354,4 @@ def doFileAnalisys():
 	print 'Query End'
 
 if __name__ == '__main__':
-	doFileMerge_4()
+	doFileMerge_2()
