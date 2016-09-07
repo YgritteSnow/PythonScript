@@ -10,6 +10,13 @@ ENUM_TYPE_LIST = 3
 ENUM_TYPE_MAP = 4
 ENUM_TYPE_FLOAT = 5
 
+def GetDestpathAndOriginname(filename, destPath):
+	dataName = filename.split('/')[-1].split('\\')[-1].split('.')[-2]
+	filePath = filename[:filename.rfind(dataName)]
+	if destPath is None:destPath = filePath
+
+	return destPath, dataName
+
 def SweepSpace(srcStr):
 	srcStr = srcStr.encode('utf-8')
 	i = len(srcStr) - 1
@@ -23,9 +30,11 @@ def SweepSpace(srcStr):
 	return srcStr[:i+1]
 
 class CSVLoader(object):
-	def __init__(self, func):
+	def __init__(self):
 		super(CSVLoader, self).__init__()
-		self.parseFunc = func
+		self.data = None
+		self.destPath = ""
+		self.dataName = ""
 
 	def Parse(self, filename, destPath=None):
 		'''
@@ -37,9 +46,7 @@ class CSVLoader(object):
 		}
 		@param func:输出的函数
 		'''
-		dataName = filename.split('/')[-1].split('\\')[-1].split('.')[-2]
-		filePath = filename[:filename.rfind(dataName)]
-		if destPath is None:destPath = filePath
+		self.destPath, self.dataName = GetDestpathAndOriginname(filename, destPath)
 
 		line_idx = -1
 
@@ -59,14 +66,15 @@ class CSVLoader(object):
 			else:
 				dataList.append(self.parseData(dataStructType, line))
 
-		res = {}
+		self.data = {}
 		for data_line in dataList:
 			new_data = {}
 			for data_one, data_name in zip(data_line[1:], dataStructName[1:]):
 				new_data[data_name] = data_one
-			res[data_line[0]] = new_data
+			self.data[data_line[0]] = new_data
 
-		self.parseFunc(destPath, dataName, res)
+	def WriteByFunc(self, func):
+		func(self.destPath, self.dataName, res)
 
 
 	def parseType(self, typeStr):
@@ -139,6 +147,11 @@ def WriteToJsFile(filePath, dataName, dataContent):
 	return
 
 a = CSVLoader(WriteToJsFile)
+
 #a.ParseDummy(r"D:\MyProjects\PythonScript\PythonScripts\majiang_pattern.csv")
+
 a.Parse(r"D:\MyProjects\PythonScript\PythonScripts\majiang_pattern.csv", r"D:\MyProjects\CocosProject\test\src\\")
+a.WriteByFunc(WriteToJsFile);
+
 a.Parse(r"D:\MyProjects\PythonScript\PythonScripts\majiang_card.csv", r"D:\MyProjects\CocosProject\test\src\\")
+a.WriteByFunc(WriteToJsFile);
