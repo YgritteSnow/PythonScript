@@ -1,4 +1,4 @@
-模式编号,模式名称,模式内容,所属的更高级模式
+模式编号,模式名称,模式内容,所属模式组
 key,name,pattern,higherPattern
 int,string,list,int
 0,连,"(0,1,2)",1

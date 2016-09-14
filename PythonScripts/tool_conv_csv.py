@@ -33,11 +33,26 @@ def SweepSpace(srcStr):
 class CSVLoader(object):
 	def __init__(self):
 		super(CSVLoader, self).__init__()
-		self.data = None
+		self.data_map = {} # 存储主表的数据
+		self.data_summarySets = {} # 存储要统计的某一列 {col_name: value_ho}
+		self.data_analyseMaps = {} # 存储要统计的某一列的 {col_name: {value:[key_value]} }
+
 		self.destPath = ""
 		self.dataName = ""
 
-	def Parse(self, filename, destPath=None):
+	def ZipData(self):return (self.data_map, self.data_summarySets, self.data_analyseMaps)
+
+	def ParseAll(self, filename, destPath, summaryCol = ('key',), analyseCol = None):
+		self.data_map = {} # 存储主表的数据
+		self.data_summarySets = {} # 存储要统计的某一列 {col_name: value_ho}
+		self.data_analyseMaps = {} # 存储要统计的某一列的 {col_name: {value:[key_value]} }
+		self.Parse(filename, destPath)
+		if summaryCol:self.ParseSummary(summaryCol)
+		if analyseCol:self.ParseAnalyse(analyseCol)
+
+		return
+
+	def Parse(self, filename, destPath, summaryCol = ('key',), analyseCol = None):
 		'''
 		读取文件，得到一个数据，使用func函数将数据写入文件。
 
@@ -70,16 +85,44 @@ class CSVLoader(object):
 			else:
 				dataList.append(self.parseData(dataStructType, line))
 
-		self.data = {}
+		self.data_map = {}
 		for data_line in dataList:
 			new_data = {}
 			for data_one, data_name in zip(data_line[1:], dataStructName[1:]):
 				new_data[data_name] = data_one
-			self.data[data_line[0]] = new_data
+			self.data_map[data_line[0]] = new_data
+
+		return
+
+	def ParseSummary(self, summaryCol):
+		# 统计的某一列的数据
+		self.data_summarySets = {}
+		for col_name in summaryCol:
+			if col_name == 'key':
+				self.data_summarySets[col_name] = set(self.data_map.keys())
+			else:
+				self.data_summarySets[col_name] = set([i[col_name] for i in self.data_map.values()])
+
+		return
+
+	def ParseAnalyse(self, analyseCol):
+		'''统计某一列与主键的关系'''
+		self.data_analyseMaps = {}
+		for col_name in analyseCol:
+			if col_name == 'key':
+				continue
+			else:
+				analyseMap = {}
+				for key, values in self.data_map.iteritems():
+					analyseMap.setdefault(values[col_name], []).append(key)
+					self.data_analyseMaps[col_name] = analyseMap
+
+		return
 
 	def WriteByFunc(self, func):
-		func(self.destPath, self.dataName, self.data)
+		func(self.destPath, self.dataName, self.data_map, self.data_summarySets, self.data_analyseMaps)
 
+		return
 
 	def parseType(self, typeStr):
 		if typeStr == "int":
@@ -135,21 +178,30 @@ class CSVLoader(object):
 		f.close()
 
 
-def WriteToJsFile(filePath, dataName, dataContent):
+def WriteToJsFile(filePath, dataName, data_map, summarySets, analyseMaps):
 	new_file_name = 'd_' + dataName
 	f = codecs.open(filePath + new_file_name + '.js', 'w', 'utf-8')
 	f.write('var ' + new_file_name +' = ')
-	#f.write(json.dumps(dataContent), indent=4)
-	#json.dump(dataContent, f, ensure_ascii=False) # 不能用这个
-	res = json.dumps(dataContent, ensure_ascii=False, indent=4)
+	#f.write(json.dumps(data_map), indent=4)
+	#json.dump(data_map, f, ensure_ascii=False) # 不能用这个
+	res = json.dumps(data_map, ensure_ascii=False, indent=4)
 	f.write(res.decode('gb2312'))
 	f.write(';')
 
-	f.write('\n\n' + new_file_name + '_ho = ')
-	res = json.dumps(dataContent.keys(), ensure_ascii=False)
-	f.write(res.decode('gb2312'))
-	f.write(';')
-	
+	for summaryName, summarySet in summarySets.items():
+		f.write('\n\n')
+		f.write('var ' + new_file_name + '_' + summaryName + '_ho = ')
+		res = json.dumps(tuple(summarySet), ensure_ascii=False)
+		f.write(res.decode('gb2312'))
+		f.write(';')
+
+	for analyseName, analyseMap in analyseMaps.items():
+		f.write('\n\n')
+		f.write('var ' + new_file_name + '_' + analyseName + '_map = ')
+		res = json.dumps(analyseMap, ensure_ascii=False)
+		f.write(res.decode('gb2312'))
+		f.write(';')
+		
 	f.close()
 
 	return
@@ -161,5 +213,9 @@ a = CSVLoader()
 for filename in ('majiang_pattern', 'majiang_card', ):
 	srcPath = r"D:\MyProjects\PythonScript\PythonScripts\\" + filename + r'.csv'
 	dstPath = r"D:\MyProjects\CocosProject\test\src\\"
-	a.Parse(srcPath, dstPath)
-	a.WriteByFunc(WriteToJsFile);
+
+	analyseCol = None
+	if filename == 'majiang_pattern':analyseCol = ('higherPattern',)
+
+	a.ParseAll(srcPath, dstPath, analyseCol=analyseCol)
+	a.WriteByFunc(WriteToJsFile)
