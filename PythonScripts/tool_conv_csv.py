@@ -9,6 +9,7 @@ ENUM_TYPE_STRING = 2
 ENUM_TYPE_LIST = 3
 ENUM_TYPE_MAP = 4
 ENUM_TYPE_FLOAT = 5
+ENUM_TYPE_BOOL = 6
 
 def GetDestpathAndOriginname(filename, destPath):
 	dataName = filename.split('/')[-1].split('\\')[-1].split('.')[-2]
@@ -55,6 +56,9 @@ class CSVLoader(object):
 		dataList = []
 
 		for line in csv.reader(codecs.open(filename, 'r')):
+			while( line[-1] == ''):
+				line.pop()
+
 			line_idx += 1
 
 			if line_idx == 0:
@@ -74,7 +78,7 @@ class CSVLoader(object):
 			self.data[data_line[0]] = new_data
 
 	def WriteByFunc(self, func):
-		func(self.destPath, self.dataName, res)
+		func(self.destPath, self.dataName, self.data)
 
 
 	def parseType(self, typeStr):
@@ -88,6 +92,8 @@ class CSVLoader(object):
 			return ENUM_TYPE_LIST
 		elif typeStr == "map":
 			return ENUM_TYPE_MAP
+		elif typeStr == "bool":
+			return ENUM_TYPE_BOOL
 		else:
 			raise ValueError, "parseType Error: Invalid Type[ " + typeStr + " ]"
 			return ENUM_TYPE_STRING
@@ -105,6 +111,8 @@ class CSVLoader(object):
 				data.append(tuple(eval(d)))
 			elif t == ENUM_TYPE_MAP:
 				data.append(eval(d))
+			elif t == ENUM_TYPE_BOOL:
+				data.append(bool(eval(d)))
 			else:
 				raise ValueError, "parseData Error: Invalid Type[ " + t + ", " + d + " ]"
 				data.append("")
@@ -146,12 +154,12 @@ def WriteToJsFile(filePath, dataName, dataContent):
 
 	return
 
-a = CSVLoader(WriteToJsFile)
+a = CSVLoader()
 
 #a.ParseDummy(r"D:\MyProjects\PythonScript\PythonScripts\majiang_pattern.csv")
 
-a.Parse(r"D:\MyProjects\PythonScript\PythonScripts\majiang_pattern.csv", r"D:\MyProjects\CocosProject\test\src\\")
-a.WriteByFunc(WriteToJsFile);
-
-a.Parse(r"D:\MyProjects\PythonScript\PythonScripts\majiang_card.csv", r"D:\MyProjects\CocosProject\test\src\\")
-a.WriteByFunc(WriteToJsFile);
+for filename in ('majiang_pattern', 'majiang_card', ):
+	srcPath = r"D:\MyProjects\PythonScript\PythonScripts\\" + filename + r'.csv'
+	dstPath = r"D:\MyProjects\CocosProject\test\src\\"
+	a.Parse(srcPath, dstPath)
+	a.WriteByFunc(WriteToJsFile);
