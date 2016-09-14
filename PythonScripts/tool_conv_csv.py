@@ -50,7 +50,7 @@ class CSVLoader(object):
 		if summaryCol:self.ParseSummary(summaryCol)
 		if analyseCol:self.ParseAnalyse(analyseCol)
 
-		return
+		return self.ZipData()
 
 	def Parse(self, filename, destPath, summaryCol = ('key',), analyseCol = None):
 		'''
