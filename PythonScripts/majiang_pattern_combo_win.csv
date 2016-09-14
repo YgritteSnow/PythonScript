@@ -1,6 +1,6 @@
 胡牌牌型,说明,牌型组合,优先级,互斥
 key,name,combo,priority,mutex
-int,name,list,int,list
+int,string,list,int,list
 1,清一色,"(0,1)",1,"(2,3,)"
 2,大吊车,"(3,)",2,"(3,)"
 3,平胡,"(5,6,7,)",10,()

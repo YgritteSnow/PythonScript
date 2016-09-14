@@ -11,6 +11,15 @@ ENUM_TYPE_MAP = 4
 ENUM_TYPE_FLOAT = 5
 ENUM_TYPE_BOOL = 6
 
+g_ParseDataFuncMap = {
+	ENUM_TYPE_INT:lambda x:0 if not x else int(x),
+	ENUM_TYPE_STRING:lambda x:x,
+	ENUM_TYPE_LIST:lambda x:() if not x else tuple(eval(x)),
+	ENUM_TYPE_MAP:lambda x:{} if not x else eval(x),
+	ENUM_TYPE_FLOAT:lambda x:0.0 if not x else float(x),
+	ENUM_TYPE_BOOL :lambda x:false if not x else bool(x),
+}
+
 def GetDestpathAndOriginname(filename, destPath):
 	dataName = filename.split('/')[-1].split('\\')[-1].split('.')[-2]
 	filePath = filename[:filename.rfind(dataName)]
@@ -42,12 +51,16 @@ class CSVLoader(object):
 
 	def ZipData(self):return (self.data_map, self.data_summarySets, self.data_analyseMaps)
 
-	def ParseAll(self, filename, destPath, summaryCol = ('key',), analyseCol = None):
+	def ParseAll(self, filename, destPath, summaryCol = None, analyseCol = None):
 		self.data_map = {} # 存储主表的数据
 		self.data_summarySets = {} # 存储要统计的某一列 {col_name: value_ho}
 		self.data_analyseMaps = {} # 存储要统计的某一列的 {col_name: {value:[key_value]} }
 		self.Parse(filename, destPath)
-		if summaryCol:self.ParseSummary(summaryCol)
+
+		if not summaryCol:summaryCol = ('key', )
+		else:summaryCol = ['key',] + list(summaryCol)
+		self.ParseSummary(summaryCol)
+
 		if analyseCol:self.ParseAnalyse(analyseCol)
 
 		return self.ZipData()
@@ -144,21 +157,15 @@ class CSVLoader(object):
 	def parseData(self, typeList, dataLineStr):
 		data = []
 		for t, d in zip(typeList, dataLineStr):
-			if t == ENUM_TYPE_INT:
-				data.append(int(eval(d)))
-			elif t == ENUM_TYPE_STRING:
-				data.append(d)
-			elif t == ENUM_TYPE_FLOAT:
-				data.append(float(eval(d)))
-			elif t == ENUM_TYPE_LIST:
-				data.append(tuple(eval(d)))
-			elif t == ENUM_TYPE_MAP:
-				data.append(eval(d))
-			elif t == ENUM_TYPE_BOOL:
-				data.append(bool(eval(d)))
-			else:
-				raise ValueError, "parseData Error: Invalid Type[ " + t + ", " + d + " ]"
-				data.append("")
+			#try:
+				func = g_ParseDataFuncMap.get(t)
+				if func:
+					data.append(func(d))
+				else:
+					raise ValueError, "parseData Error: Invalid Type[ " + t + ", " + d + " ]"
+					data.append("")
+			#except Exception, e:
+			#	print Exception,":",e,";", t,",",d,","
 		return data
 		
 
@@ -210,12 +217,14 @@ a = CSVLoader()
 
 #a.ParseDummy(r"D:\MyProjects\PythonScript\PythonScripts\majiang_pattern.csv")
 
-for filename in ('majiang_pattern', 'majiang_card', ):
+for filename in ('majiang_pattern', 'majiang_card', 'majiang_pattern_combo', 'majiang_pattern_combo_win', ):
 	srcPath = r"D:\MyProjects\PythonScript\PythonScripts\\" + filename + r'.csv'
 	dstPath = r"D:\MyProjects\CocosProject\test\src\\"
 
 	analyseCol = None
+	summaryCol = None
 	if filename == 'majiang_pattern':analyseCol = ('higherPattern',)
+	if filename == 'majiang_card':summaryCol = ('flower',)
 
-	a.ParseAll(srcPath, dstPath, analyseCol=analyseCol)
+	a.ParseAll(srcPath, dstPath, summaryCol=summaryCol, analyseCol=analyseCol)
 	a.WriteByFunc(WriteToJsFile)
