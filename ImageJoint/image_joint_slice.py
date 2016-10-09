@@ -50,9 +50,13 @@ class ImageSlicer( object ):
         super(ImageSlicer, self).__init__()
         self._destSize = IntVec2(destSize)
         self._rowList = [IntVec2(0, 0), ] # [(左下角坐标，宽度), ]
+        self._sliceData = []
+
+    def GetSliceRowList(self):
+        return self._rowList
 
     def GetSliceData(self):
-        return self._rowList
+        return 
 
     def getNeedWidth(self):
         '''获得下一个准备放置的位置'''
@@ -107,13 +111,21 @@ class ImageSlicer( object ):
 
         self._rowList.insert(idx, IntVec2(popPosX, lastpos.y - popSize.y))
         self._rowList.insert(idx + 1, IntVec2(popPosX + popSize.x, lastpos.y))
+        self.addSliceData(popSize)
 
         self.simpRowList(idx + 1)
         self.simpRowList(idx)
 
         return
 
+    Enum_PushResult_Fail = 1
+    Enum_PushResult_End = 2
+    Enum_PushResult_Success = 3
+
     def rowPush(self, pushSize):
+        '''
+        增加一个方块，如果成功，返回True和信息，否则返回False和None
+        '''
         if pushSize.x == 0:
             DEBUG_ERR("Invalid size x")
             return
@@ -122,10 +134,10 @@ class ImageSlicer( object ):
 
         if idx == -1:
             print "cannot put into dest" # 指示压栈尝试错误，需要弹出
-            return
+            return Enum_PushResult_Fail, None
         if minHeight >= self._destSize.y:
             print "slice end" # 指示递归终点
-            return
+            return Enum_PushResult_End, None
 
         newPos = IntVec2(needPosX, minHeight + pushSize.y)
         if needWidth == pushSize.x:# 恰好与将要放置的位置的宽度相等
@@ -139,10 +151,10 @@ class ImageSlicer( object ):
             self._rowList[idx] = newPos
         else:
             DEBUG_ERR("didnot match")
-            return
+            return Enum_PushResult_Fail, None
 
         self.simpRowList(idx)
-        return needPosX
+        return Enum_PushResult_Success, needPosX
 
     def simpRowList(self, idx):
         cur_y = self._rowList[idx].y
@@ -200,7 +212,9 @@ class ImageSlicer( object ):
             while( currentIdx < sizesCount ):
                 imageSize = sizes[(currentIdx + startIdx)%sizesCount]
                 if imageSize.x <= needWidth:
-                    rowPos = self.rowPush(imageSize)
+                pushResult, rowPos = self.rowPush(imageSize)
+
+                if pushResult == Enum_PushResult_Success:
                     t_stack.append((startIdx, imageSize, currentIdx, rowPos))
                 
                     startIdx = random.randint(0, sizesCount)
@@ -259,7 +273,7 @@ class TestImageSlice( object ):
                         popsize, posx = testData.pop()
                         t.rowPop(IntVec2(popsize), posx)
 
-                        self._showSlicer(screen, t.GetSliceData())
+                        self._showSlicer(screen, t.GetSliceRowList())
                     else:
                         DEBUG_ERR("Done.")
 
@@ -267,7 +281,7 @@ testlist = [
 ]
 
 for i in range(40):
-    testlist.append(((random.randint(1, 2) * 40, random.randint(1, 2) * 40), random.randint(1,2)*40))
+    testlist.append(((random.randint(1, 2) * 40, random.randint(1, 2) * 40), random.randint(1,6)*40))
 
 tv = TestImageSlice()
 tv.ShowSlicer(testlist)
