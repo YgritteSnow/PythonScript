@@ -7,10 +7,10 @@
 
 import pygame
 import random
-from image_joint_common import *
 import copy
 
-MAX_WIDTH = 9999
+from image_joint_common import DEBUG_ERR, IntVec2, MAX_WIDTH
+
 
 Enum_PushResult_Fail = 1
 Enum_PushResult_End = 2
@@ -18,39 +18,6 @@ Enum_PushResult_Success = 3
 
 Enum_ShowRowList = 1
 Enum_ShowSliceData = 2
-
-####################################################
-###
-####################################################
-
-class IntVec2( object ):
-	
-	def __init__(self, x, y=None):
-		super(IntVec2, self).__init__()
-		if y is None:
-			self._x, self._y = x
-		else:
-			self._x = x
-			self._y = y
-
-	def __eq__(self, b):return self._x == b._x and self._y == b._y
-	def __hash__(self):return self._x + self._y * MAX_WIDTH
-	def __str__(self):return "(" + str(self._x) + ", " + str(self._y) + ")"
-	def __iter__(self):
-		for i in (self._x, self._y):yield i
-
-	@property
-	def x(self):return self._x
-	@property
-	def y(self):return self._y
-
-	def toTuple(self):return (self._x, self._y)
-	def offset(self, (x, y)):return (self._x + x, self._y + y)
-
-	def AddX(self, x):self._x += x
-	def AddY(self, y):self._y += y
-
-	def Area(self):return self._x * self._y
 
 ####################################################
 ###
@@ -64,7 +31,7 @@ class ImageSlicer( object ):
 	2. 如果没有可以放入该高度的地方
 	'''
 
-	def __init__(self, destSize, imagesInfo=[]):
+	def __init__(self, destSize):
 		super(ImageSlicer, self).__init__()
 		self._destSize = IntVec2(destSize)
 		self.clearData()
@@ -171,7 +138,7 @@ class ImageSlicer( object ):
 		elif idx == len(self._rowList) - 1:# 如果在最右侧，那么不论如何容许放置
 			self._rowList[idx] = newPos
 		else:
-			DEBUG_ERR("didnot match")
+			print "didnot match"
 			return Enum_PushResult_Fail, None
 
 		self.simpRowList(idx)
@@ -346,13 +313,11 @@ class TestImageSlice( object ):
 		screen = pygame.display.set_mode(self.surSize, 0, 32)
 		t.GenerateSlicer(imagesInfo)
 		self._showSliceData(screen, t.GetSliceData())
-		print "2222"
 
 		while True:
 			for event in pygame.event.get():
 				if event.type == pygame.QUIT:
 					exit()
-		print "3333"
 
 
 ####################################################
@@ -381,4 +346,5 @@ def main_test():
 			testImgList[IntVec2(20,10)] = 150
 		testSlicer.ShowVisualDataOnce(testImgList)
 
-main_test()
+if __name__ == '__main__':
+	main_test()
