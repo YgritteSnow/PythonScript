@@ -35,7 +35,7 @@ def generateTest_supply( originLists ):
 	return originLists
 
 
-a = generateTest_supply( ([1,1,1,3,3,3,5,5,5,6,6,6,4], [1,1,1,3,3,3,5,5,5,6,6,6,4], [4,], [4,], []) )
+a = generateTest_supply( ([1,2,3,4,5,6,15,15,15,6,6,6,5], [5,], [5,], [5,], [5,]) )
 resStr = ''
 for i in a:
 	for j in i:
