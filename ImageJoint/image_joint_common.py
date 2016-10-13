@@ -11,6 +11,7 @@ import copy
 ####################################################
 
 MAX_WIDTH = 9999
+MAX_LOOP_COUNT = 1000 * 1000
 
 ####################################################
 ###
@@ -102,7 +103,7 @@ class Octree( object ):
 	''' 
 	N叉树（及其结点）
 	'''
-	maxheight = 0
+	maxheight = 0 # todo debug用
 
 	def __init__(self, obj, keyFuncs, objList, height = 0):
 		super(Octree, self).__init__()
@@ -112,7 +113,6 @@ class Octree( object ):
 
 		if self._height > Octree.maxheight:
 			Octree.maxheight = self._height
-			print "Octree height max:", Octree.maxheight
 
 		if objList is not None and len(objList) > 1:
 			self._addChildren(objList, keyFuncs)
@@ -120,7 +120,7 @@ class Octree( object ):
 	def __getitem__(self, key_list):
 		cur_obj = self
 		while len(key_list) > 0:
-			cur_obj = self._children[key_list.pop(0)]
+			cur_obj = cur_obj._children[key_list.pop(0)]
 		return cur_obj._obj
 		
 	def _cmp(self, obj1, obj2):return obj1 < obj2
@@ -150,6 +150,10 @@ class Octree( object ):
 		if self._children.has_key(cur_key):
 			cur_key_list.append(cur_key)
 			self._children[cur_key]._searchChildren(obj, keyFuncs, cur_key_list)
+
+	def toString(self, objStr):
+		for i in self._children.values():
+			i.toString(objStr)
 
 ####################################################
 ###
@@ -270,6 +274,8 @@ class SortAndFind_Vec3( object ):
 			lambda obj:obj[0].b, 
 			)
 		self._indexedObjBuff = Octree(self._objList[0], keyFuncs, self._objList[1:]) # 建立八叉树索引
+		self._indexedObjBuff.toString(lambda x:x[0])
+		print "octree maxheight:", Octree.maxheight
 
 	def _finder_octree_repeat_y(self, obj):
 		keyFuncs = (
@@ -277,7 +283,8 @@ class SortAndFind_Vec3( object ):
 			lambda obj:obj[0].g, 
 			lambda obj:obj[0].b, 
 			)
-		return self._indexedObjBuff.SearchIdx(obj, keyFuncs) 
+		res = self._indexedObjBuff.SearchIdx(obj, keyFuncs) 
+		return res
 
 	def _finder_octree_repeat_x(self, obj):
 		nearestIdx = _finder_linear_repeat_y(self, obj)

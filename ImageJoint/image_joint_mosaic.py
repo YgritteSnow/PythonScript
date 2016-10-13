@@ -69,7 +69,7 @@ class ImageJointMosaic( object ):
 
 	def SetMosaicData(self, srcImageList, sliceData, destImage):
 		 # RGB通道的权重计算式
-		self._sorter = SortAndFind_Vec3(srcImageList, )
+		self._sorter = SortAndFind_Vec3(srcImageList)
 
 		#_weightMethod_linear = lambda color:color[0].r + 2 * color[0].g + color[0].b
 		#self._sorter.SortByStrategy(_weightMethod_linear, Enum_SortStrategy_Linear)
@@ -89,12 +89,6 @@ class ImageJointMosaic( object ):
 	####################################################
 	###
 	####################################################
-
-	def ShowProcessMosaic(self):
-		self._showVisualResult(self._processMosaic())
-
-		return
-
 	def _processMosaic(self, useOrderedMargin=False, canNotRepeat=False):
 		'''
 		填充马赛克区域
@@ -113,6 +107,7 @@ class ImageJointMosaic( object ):
 			if useOrderedMargin:cur_dest_color += last_color_surplus / slice_node.sliceSize.Area()
 
 			find_src_img_node = self.FindMatchImage([cur_dest_color, 0], repeatBuff)
+			#print "_processMosaic loop", cur_dest_color, find_src_img_node[0]
 			result.append( find_src_img_node )
 
 			last_color_surplus = ( cur_dest_color - find_src_img_node[0] ) * slice_node.sliceSize.Area()
@@ -144,6 +139,14 @@ class ImageJointMosaic( object ):
 				if event.type == pygame.QUIT:
 					exit()
 
+	def _generateImageFile(self, resultImg):
+		newImg = Image.new("RGBA", self._surSize, (0,0,0,0))
+
+		for mosaicNode, imageNode in zip(self._destMosaicNodes, resultImg):
+			newImg.paste(imageNode[1].obj, mosaicNode.slicePos.toTuple())
+
+		newImg.show()
+
 def main_test():
 	imgColorList = []
 	#for x in range(0, 255, 10):
@@ -152,11 +155,11 @@ def main_test():
 	#			imgColorList.append((IntVec3(x,y,z), 0))
 
 
-	for x in range(0, 255, 10):
-		imgColorList.append((IntVec3(x,x,x), 0))
+	#for x in range(0, 255, 10):
+	#	imgColorList.append((IntVec3(x,x,x), 0))
 
-	#for i in range(0, 100):
-	#	imgColorList.append((IntVec3(random.randint(0, 100), random.randint(0, 100), random.randint(0, 100)), 0))
+	for i in range(0, 1000):
+		imgColorList.append((IntVec3(random.randint(0, 255), random.randint(0, 255), random.randint(0, 255)), 0))
 
 	testImgList = {}
 	for i in range(40):
@@ -171,10 +174,10 @@ def main_test():
 	sliceObj.GenerateSlicer(testImgList)
 	print "GenerateSlicer end"
 
-	print "ShowProcessMosaic start"
+	print "TestProcessMosaic start"
 	mosaicObj = ImageJointMosaic(imgColorList, sliceObj.GetSliceData(), sizetuple, "test.jpg")
-	mosaicObj.ShowProcessMosaic()
-	print "ShowProcessMosaic end"
+	mosaicObj._showVisualResult(mosaicObj._processMosaic())
+	print "TestProcessMosaic end"
 
 if __name__ == "__main__":
 	main_test()

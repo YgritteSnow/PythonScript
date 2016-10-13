@@ -9,7 +9,7 @@ import pygame
 import random
 import copy
 
-from image_joint_common import DEBUG_ERR, IntVec2, MAX_WIDTH
+from image_joint_common import DEBUG_ERR, IntVec2, MAX_WIDTH, MAX_LOOP_COUNT
 
 
 Enum_PushResult_Fail = 1
@@ -138,7 +138,6 @@ class ImageSlicer( object ):
 		elif idx == len(self._rowList) - 1:# 如果在最右侧，那么不论如何容许放置
 			self._rowList[idx] = newPos
 		else:
-			print "didnot match"
 			return Enum_PushResult_Fail, None
 
 		self.simpRowList(idx)
@@ -179,7 +178,7 @@ class ImageSlicer( object ):
 	###
 	####################################################
 
-	def GenerateSlicer(self, imagesInfo, usageRate = 0.9):
+	def GenerateSlicer(self, imagesInfo, usageRate = 0.9, canRepeat = True):
 		'''递归压栈和回退，得到误差范围内的一个可行的方案：
 		@param imageInfo: {图片大小:该大小的数量, }
 		@param usageRate: 所给的图片使用了超过usage百分比，即结束，意味着给定图片不足。如果强行要每个图片都用上的话，时间复杂度会太大
@@ -197,7 +196,11 @@ class ImageSlicer( object ):
 
 		startIdx = random.randint(0, sizesCount)
 		currentIdx = 0
+
+		_deep = MAX_LOOP_COUNT
 		while( True ):
+			_deep -= 1
+			if _deep < 0:raise Exception, "NotFound!!!!"
 			# 从所有图片中随机选择一个作为下一个起始尝试目标，然后依次遍历所有可尝试的目标，来寻找解决方案
 			# 如果没有找到，那么将上一次的选择pop出去，再继续尝试下一个
 
@@ -205,15 +208,18 @@ class ImageSlicer( object ):
 
 			# 当最小高度达到所需高度的时候结束
 			if minHeight >= self._destSize.y:
-				print "SUCCESS!"
+				print "SUCCESS!",
 				for i,j in imagesInfo.items():print "(", i, ",", j, ")"
 				print "len_sliceData = ", len(self._sliceData)
 				break
 
 			while( currentIdx < sizesCount ):
+				_deep -= 1
+				if _deep < 0:raise Exception, "NotFound!!!!"
+
 				imageSize = sizes[(currentIdx + startIdx)%sizesCount]
 
-				if imagesInfo[imageSize] > 0:
+				if imagesInfo[imageSize] > 0 or canRepeat:
 					pushResult, rowPos = self.rowPush(imageSize)
 					if pushResult == Enum_PushResult_Success:
 						t_stack.append((startIdx, imageSize, currentIdx, rowPos))
@@ -239,7 +245,7 @@ class ImageSlicer( object ):
 
 			curImageCount = 0
 			for i in imagesInfo.values():curImageCount += i
-			if originImageCount * (1-usageRate) >= curImageCount:
+			if originImageCount * (1-usageRate) >= curImageCount and not canRepeat:
 				print "images is too less:"
 				for i,j in imagesInfo.items():print "(", i, ",", j, ")",
 				print ""
@@ -253,8 +259,8 @@ class TestImageSlice( object ):
 
 	def __init__(self):
 		super(TestImageSlice, self).__init__()
-		self.imgSize = (400, 200)
-		self.surSize = (410, 210)
+		self.imgSize = (400, 400)
+		self.surSize = (400, 400)
 		self._fillColors = []
 
 	def _showRowList(self, screen, rowListData):
@@ -341,9 +347,7 @@ def main_test():
 		# 随机生成图片的数据的集合
 		testImgList = {}
 		for i in range(40):
-			testImgList[IntVec2(10,20)] = 150
-			testImgList[IntVec2(20,20)] = 150
-			testImgList[IntVec2(20,10)] = 150
+			testImgList[IntVec2(60,60)] = 150
 		testSlicer.ShowVisualDataOnce(testImgList)
 
 if __name__ == '__main__':
