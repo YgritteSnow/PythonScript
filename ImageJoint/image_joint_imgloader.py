@@ -184,7 +184,9 @@ class ImageJointLoader( object ):
 
 			for step in range(x_mul/x):
 				new_img = Image.new("RGBA", (x, y), (0, 0, 0, 0))
-				new_img.paste(img_obj_mul, (x*step, 0))
+				box = (x*step, 0)
+				region = img_obj_mul.crop((x*step, 0, x*step+x, y))
+				new_img.paste(region, (0,0))
 				self._imageSizeStatis.setdefault(img_size_one, []).append(new_img)
 				self._imageNodes.append(ImageJointSrcImageNode.generateByImgObj(new_img, self._forceSize))
 

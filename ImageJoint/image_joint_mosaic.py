@@ -81,6 +81,9 @@ class ImageJointMosaic( object ):
 
 		self._destMosaicNodes = [] # 经过处理的目标马赛克节点的列表
 		destImageObj = Image.open(destImage)
+		print "SetMosaicData start111:", destImageObj.size
+		destImageObj = destImageObj.resize(self._surSize, Image.ANTIALIAS)
+		print "SetMosaicData start222:", destImageObj.size
 		for slicePiece in sliceData:
 			self._destMosaicNodes.append(ImageJointMosaicNode(slicePiece, destImageObj))
 
@@ -146,6 +149,7 @@ class ImageJointMosaic( object ):
 			newImg.paste(imageNode[1].obj, mosaicNode.slicePos.toTuple())
 
 		newImg.show()
+		newImg.save("aaa.jpg")
 
 def main_test():
 	imgColorList = []

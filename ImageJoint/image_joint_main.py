@@ -15,19 +15,17 @@ def main_test():
 	#time.sleep(0.4)
 	loader.LoadFromCache()
 	imgColorList = loader.GetImageColorStatis()
-	for c,i in imgColorList:
-		print "color: ", c
 	testImgList = loader.GetImageSizeStatis()
 	print "LoadFromCache end"
 
 	print "GenerateSlicer start"
-	sizetuple = (400, 400)
+	sizetuple = (2000, 2000)
 	sliceObj = ImageSlicer(sizetuple)
 	sliceObj.GenerateSlicer(testImgList)
 	print "GenerateSlicer end"
 
 	print "TestProcessMosaic start"
-	mosaicObj = ImageJointMosaic(imgColorList[:100], sliceObj.GetSliceData(), sizetuple, "test.jpg")
+	mosaicObj = ImageJointMosaic(imgColorList, sliceObj.GetSliceData(), sizetuple, "test.jpg")
 	mosaicObj._generateImageFile(mosaicObj._processMosaic())
 	print "TestProcessMosaic end"
 
