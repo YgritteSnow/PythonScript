@@ -74,7 +74,7 @@ class ImageJointMosaic( object ):
 		#_weightMethod_linear = lambda color:color[0].r + 2 * color[0].g + color[0].b
 		#self._sorter.SortByStrategy(_weightMethod_linear, Enum_SortStrategy_Linear)
 
-		_weightMethod_sqare = lambda color:color.r*color.r + color.g*color.g + color.b*color.b
+		_weightMethod_sqare = lambda color:color.r*color.r * 9 + color.g*color.g * 36 + color.b*color.b
 		self._sorter.SortByStrategy(_weightMethod_sqare, Enum_SortStrategy_Octree)
 
 		#_weightMethod_common = lambda color:color.r*color.r + color.g*color.g + color.b*color.b
@@ -103,17 +103,17 @@ class ImageJointMosaic( object ):
 
 		repeatBuff = set() if canNotRepeat else None # 缓存中存储的是图片的index
 
-		last_color_surplus = 0 # 上一次模拟时的颜色的剩余（已经乘以了面积）
+		last_color_surplus = IntVec3(0,0,0) # 上一次模拟时的颜色的剩余（已经乘以了面积）
 		for slice_node in self._destMosaicNodes:
 			cur_dest_color = slice_node.destColor
 
-			if useOrderedMargin:cur_dest_color += last_color_surplus / slice_node.sliceSize.Area()
+			if useOrderedMargin:cur_dest_color += last_color_surplus# / slice_node.sliceSize.Area()
 
 			find_src_img_node = self.FindMatchImage([cur_dest_color, 0], repeatBuff)
 			#print "_processMosaic loop", cur_dest_color, find_src_img_node[0]
 			result.append( find_src_img_node )
 
-			last_color_surplus = ( cur_dest_color - find_src_img_node[0] ) * slice_node.sliceSize.Area()
+			last_color_surplus = ( cur_dest_color - find_src_img_node[0] )# * slice_node.sliceSize.Area()
 
 		return result
 
@@ -148,7 +148,6 @@ class ImageJointMosaic( object ):
 		for mosaicNode, imageNode in zip(self._destMosaicNodes, resultImg):
 			newImg.paste(imageNode[1].obj, mosaicNode.slicePos.toTuple())
 
-		newImg.show()
 		newImg.save("aaa.jpg")
 
 def main_test():
