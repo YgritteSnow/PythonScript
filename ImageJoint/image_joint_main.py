@@ -10,7 +10,7 @@ from image_joint_imgloader import *
 
 def main_test():
 	print "LoadFromCache start"
-	loader = ImageJointLoader(r"D:\MyProjects\PythonScript\ImageJoint\test_images\Camera", (10,10))
+	loader = ImageJointLoader(r"J:\PythonScripts\PythonScript\ImageJoint\Camera", (20,20))
 	#loader.InitCache()
 	#time.sleep(0.4)
 	loader.LoadFromCache()
@@ -19,7 +19,7 @@ def main_test():
 	print "LoadFromCache end"
 
 	print "GenerateSlicer start"
-	sizetuple = (2000, 2000)
+	sizetuple = (3000,3000)
 	sliceObj = ImageSlicer(sizetuple)
 	sliceObj.GenerateSlicer(testImgList)
 	print "GenerateSlicer end"

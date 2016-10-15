@@ -1,2 +1,6 @@
 *.pyc
 ImageJoint/test_images/
+*.jpg
+*.png
+ImageJoint/Camera/.thumb
+*.jpg
