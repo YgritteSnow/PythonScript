@@ -9,14 +9,15 @@
 
 from lib_file_node import *
 from lib_string_common import splitStr, ifCareFile
+import copy
 
 #----------------------------
 # 对单词的限制
 
-g_worldCountPerFile = 2000
-g_sortedPrinted = 100
+g_worldCountPerFile = 20000
+g_sortedPrinted = 1000
 
-g_ifIgnoreSysWord = True 
+g_ifIgnoreSysWord = False 
 g_word = set((
 	'const', 'void', 'virtual', 'class', 'varient', 'public', 'private', 'protected', 'static', 
 	'if', 'return', 'else', 'for', 'this', 'break', 'endif', 'ifdef', 'ifndef', 'define', 'case', 'new', 'iterator', 'delete', 'struct', 
@@ -33,13 +34,13 @@ def ifNotCareWord(string):return string not in g_ifOnlyCaredword
 g_ifIgnoreDigit = True 		# 是否忽略数字
 def ifDigit(string):return string.isdigit()
 
-g_ifIgnoreTooShort = 4 		# 忽略多长以下的字符串
+g_ifIgnoreTooShort = 0 		# 忽略多长以下的字符串
 def ifTooShort(string):return len(string) < g_ifIgnoreTooShort
 
 g_ifIgnoreTooLong = 20 		# 忽略多长以上的字符串
 def ifTooLong(string):return len(string) > g_ifIgnoreTooLong
 
-g_ifPrefixUpper = True 		# 忽略首字母非大写
+g_ifPrefixUpper = False 		# 忽略首字母非大写
 def ifPrefixUpper(string):return not string[0].isupper()
 
 g_restrictConfig_word = ( 						# 二者都为 true 则排除该单词
@@ -353,5 +354,59 @@ def doFileAnalisys():
 
 	print 'Query End'
 
+class FileAnalysisNode( object ):
+	'''对某一个文件进行分析，存储其词频等信息'''
+	def __init__(self, filePath="", data_map={}, filePaths=[]):
+		super(FileAnalysisNode, self).__init__()
+		self._data = {}
+
+		if filePath:
+			file_tree = FileTree(filePath)
+			self._data = analysisWord(file_tree)
+		elif filePaths:
+			for fp in filePaths:
+				self._data = self.doAdd(FileAnalysisNode(filePath=fp))._data
+
+		elif data_map:
+			self._data = data_map
+
+	def __add__(self, other):return self.doAdd(other)
+	def __sub__(self, other):return self.doSub(other)
+
+	def doAdd(self, other):
+		new_map = copy.deepcopy(self._data)
+		for i, j in other._data.iteritems():
+			new_map.setdefault(i, 0)
+			new_map[i] += j
+		return FileAnalysisNode(data_map=new_map)
+
+	def doAnd(self, other):
+		new_map = {}
+		for i, j in other._data.iteritems():
+			if i in self._data:
+				new_map[i] = j
+		return FileAnalysisNode(data_map=new_map)
+
+	def doSub(self, other):
+		new_map = copy.deepcopy(self._data)
+		for i, j in other._data.iteritems():
+			if i in new_map:
+				new_map.pop(i)
+		return FileAnalysisNode(data_map=new_map)
+
+	def printInFile(self, output_filename):
+		printSort_file(self._data, output_filename)
+
+def doFileMerge_5():
+	a = FileAnalysisNode(filePaths=[r"D:\WorkProjects\gsmj\server\CGameCodeBloodRiver.js",
+		r"D:\WorkProjects\gsmj\server\CGameCodeFightEnd.js",
+		r"D:\WorkProjects\gsmj\server\CMajinagBloodRiver.js",
+		r"D:\WorkProjects\gsmj\server\CMajiangBase.js",
+		])
+	b = FileAnalysisNode(filePath=r"D:\WorkProjects\gsmj\server\GameCode.js")
+	c = FileAnalysisNode(filePath=r"D:\WorkProjects\scmj\server\GameCode.js")
+	(a.doAnd(c) - a.doAnd(b)).printInFile(r"D:/a.txt");
+	#a.printInFile(r"D:/a.txt")
+
 if __name__ == '__main__':
-	doFileMerge_2()
+	doFileMerge_5()

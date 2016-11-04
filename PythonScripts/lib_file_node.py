@@ -65,17 +65,16 @@ class FileTree(FileNode):
 			self._queryChildren()
 
 		else:
-			idx_min = filename.find('/')
-			idx_max = filename.find('\\')
+			idx_min = filename.rfind('/')
+			idx_max = filename.rfind('\\')
 			if idx_min == -1 and idx_max != -1:
 				pass
 			elif idx_min != -1 and idx_max == -1:
 				idx_min, idx_max = idx_max, idx_min
 			elif idx_min != -1 and idx_max != -1:
 				idx_min, idx_max = min(idx_min, idx_max), max(idx_min, idx_max)
-			path = filename[:idx_max-1]
+			path = filename[:idx_max]
 			name = filename[idx_max+1:]
-
 			super(FileTree, self).__init__(name, path)
 
 	def _queryChildren(self):
