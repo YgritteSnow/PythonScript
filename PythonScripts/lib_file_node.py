@@ -39,17 +39,8 @@ class FileNode(object):
 class FileNodeTree(FileNode):
 
 	def __init__(self, filename):
-		idx_min = filename.find('/')
-		idx_max = filename.find('\\')
-		if idx_min == -1 and idx_max != -1:
-			pass
-		elif idx_min != -1 and idx_max == -1:
-			idx_min, idx_max = idx_max, idx_min
-		elif idx_min != -1 and idx_max != -1:
-			idx_min, idx_max = min(idx_min, idx_max), max(idx_min, idx_max)
-		path = filename[:idx_max]
-		name = filename[idx_max+1:]
-
+		path = os.path.dirname(filename)
+		name = os.path.basename(filename)
 		super(FileNodeTree, self).__init__(name, path)
 
 	def allNode(self):return (self, )
