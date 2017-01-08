@@ -4,6 +4,8 @@
 #     解析字符串的通用的函数
 # ---------------------------
 
+import copy
+
 # 空字符
 g_blankChar = ('\t', ' ', )
 
@@ -68,6 +70,7 @@ def analysisUnwordchar(file_tree):
 
 ##################################################################
 ### 检查字符串中双引号内部的部分，如果包含所要的字符串，那么就把引号之间的部分替换为新的字符串
+### 注：只能查找一个双引号之间的内容
 ##################################################################
 
 def replaceStrInQuot( origin_str, quote_new_str, left_quote = '"', right_quote = '"' ):
@@ -95,6 +98,61 @@ def findHFilename( origin_str ):
 			return res[t-1] + '.' + postfix
 		except:
 			continue
+
+##################################################################
+### 把目标字符串按照双引号内容分割，yield输出
+### 注：每次输出内容为 双引号前的内容(包含前引号) 和 双引号内的内容
+##################################################################
+
+def deleteComments( origin_str, line_comment_str, section_comment_strs ):
+	origin_str = copy.deepcopy(origin_str)
+	match_comments = [(l, r) for l,r in section_comment_strs]
+	match_comments.append((line_comment_str, "\n"))
+	for comment_left, comment_right in match_comments:
+		while True:
+			idx_comment_left = origin_str.find(comment_left)
+			if idx_comment_left == -1:
+				break
+
+			idx_comment_right = origin_str[idx_comment_left+1:].find(comment_right)
+
+			#print "deleteComments ... ", idx_comment_left, idx_comment_right, origin_str[idx_comment_left:idx_comment_right]
+			if idx_comment_right == -1:
+				origin_str = origin_str[:idx_comment_left]
+			else:
+				idx_comment_right += idx_comment_left+1
+				origin_str = origin_str[:idx_comment_left] + origin_str[idx_comment_right+1:]
+
+	return origin_str
+
+def splitByDoubleQuote( origin_str ):
+	origin_str = deleteComments(origin_str, "//", (("/*", "*/"), ))
+	cur_lo = -1
+	cur_hi = -1
+
+	cur_finding_min_idx = 0
+	last_match_hi = 0
+
+	_deep = 100
+	while _deep > 0:
+		_deep -= 1
+		temp_find = origin_str[cur_finding_min_idx:].find("\"")
+		if temp_find != -1:
+			if temp_find != 0 and origin_str[temp_find-1] == "\\":
+				# 对转义字符，继续向后查找( todo 这里其实不准确，因为前一个反斜杠也可能是已经被转义了的无效字符)
+				cur_finding_min_idx = temp_find + 1
+			else:
+				if cur_lo == -1: # 优先查找左侧字符
+					cur_lo = temp_find + cur_finding_min_idx
+					cur_finding_min_idx = cur_lo + 1
+				else:
+					cur_hi = temp_find + cur_finding_min_idx
+					cur_finding_min_idx = cur_hi + 1
+					yield origin_str[last_match_hi:cur_lo+1], origin_str[cur_lo+1:cur_hi]
+					last_match_hi = cur_hi
+					cur_lo = -1 # 重置左侧字符为未查找状态
+		else:
+			break
 
 ##################################################################
 ### 匹配成对的字符串，例如括号、if/ifdef/endif
@@ -134,3 +192,15 @@ def splitPostFix( line ):
 	idx = len(line) - 1
 	while idx != -1 and line[idx] in g_blankChar:idx -= 1
 	return line[:idx+1], line[idx+1:]
+
+##################################################################
+### 分割文件名字符串为path和filename两部分
+##################################################################
+
+def replaceStrByMatchedStr( originStr, matchStr, newStr ):
+	if originStr.find(matchStr) != -1:
+		match_lo = originStr.find(matchStr)
+		match_hi = match_lo + len(matchStr)
+		originStr = originStr[:match_lo] + newStr + originStr[match_hi:]
+
+	return originStr

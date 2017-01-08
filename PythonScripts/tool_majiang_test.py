@@ -3,7 +3,7 @@
 import random
 from tool_conv_csv import CSVLoader
 
-g_needCount = (13, 13, 13, 13, 50)
+g_needCount = (13, 13, 13, 13, 108-4*13)
 
 g_dataMap, t1, t2 = CSVLoader().ParseAll(r"D:\MyProjects\PythonScript\PythonScripts\\majiang_card.csv", r"D:\MyProjects\CocosProject\test\src\\")
 g_card_ho = g_dataMap.keys()
@@ -35,7 +35,13 @@ def generateTest_supply( originLists ):
 	return originLists
 
 
-a = generateTest_supply( ([1,2,3,4,5,6,15,15,15,6,6,6,5], [5,], [5,], [5,], [5,]) )
+a = generateTest_supply( (
+	[1,1,1,11,12,13,21,21,21,9,9,31,31,],
+	[9,9,],
+	[],
+	[],
+	[],
+	) )
 resStr = ''
 for i in a:
 	for j in i:
