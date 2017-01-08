@@ -4,3 +4,4 @@ ImageJoint/test_images/
 *.png
 ImageJoint/Camera/.thumb
 *.jpg
+*/.idea
